@@ -83,6 +83,7 @@ import (
 	"strings"
 	"sync"
 
+	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 
 	"github.com/Sagleft/goml/base"
@@ -166,7 +167,7 @@ type NaiveBayes struct {
 
 	// tokenizer is used by a model
 	// to split the input into tokens
-	Tokenizer Tokenizer `json:"tokenizer"`
+	tokenizer Tokenizer
 
 	// Output is the io.Writer used for logging
 	// and printing. Defaults to os.Stdout.
@@ -184,6 +185,10 @@ type Tokenizer interface {
 // SplitOn string – space, for example
 type SimpleTokenizer struct {
 	SplitOn string
+}
+
+func NewDefaultSanitizer() *SimpleTokenizer {
+	return &SimpleTokenizer{SplitOn: " "}
 }
 
 // Tokenize splits input sentences into a lowecase slice
@@ -257,6 +262,18 @@ type Word struct {
 	DocsSeen uint64 `json:"-"`
 }
 
+type runeSanitizer struct {
+	method func(rune) bool
+}
+
+func newRuneSanitizer(m func(rune) bool) *runeSanitizer {
+	return &runeSanitizer{method: m}
+}
+
+func (s *runeSanitizer) Contains(r rune) bool {
+	return s.method(r)
+}
+
 // NewNaiveBayes returns a NaiveBayes model the
 // given number of classes instantiated, ready
 // to learn off the given data stream. The sanitization
@@ -268,9 +285,9 @@ func NewNaiveBayes(stream <-chan base.TextDatapoint, classes uint8, sanitize fun
 		Count:         make([]uint64, classes),
 		Probabilities: make([]float64, classes),
 
-		sanitize:  transform.RemoveFunc(sanitize),
+		sanitize:  runes.Remove(newRuneSanitizer(sanitize)),
 		stream:    stream,
-		Tokenizer: &SimpleTokenizer{SplitOn: " "},
+		tokenizer: NewDefaultSanitizer(),
 
 		Output: os.Stdout,
 	}
@@ -284,7 +301,7 @@ func (b *NaiveBayes) Predict(sentence string) uint8 {
 	sums := make([]float64, len(b.Count))
 
 	sentence, _, _ = transform.String(b.sanitize, sentence)
-	words := b.Tokenizer.Tokenize(sentence)
+	words := b.tokenizer.Tokenize(sentence)
 	for _, word := range words {
 		w, ok := b.Words.Get(word)
 		if !ok {
@@ -335,7 +352,7 @@ func (b *NaiveBayes) Probability(sentence string) (uint8, float64) {
 	}
 
 	sentence, _, _ = transform.String(b.sanitize, sentence)
-	words := b.Tokenizer.Tokenize(sentence)
+	words := b.tokenizer.Tokenize(sentence)
 	for _, word := range words {
 		w, ok := b.Words.Get(word)
 		if !ok {
@@ -388,7 +405,7 @@ func (b *NaiveBayes) OnlineLearn(errors chan<- error) {
 		if more {
 			// sanitize and break up document
 			sanitized, _, _ := transform.String(b.sanitize, point.X)
-			words := b.Tokenizer.Tokenize(sanitized)
+			words := b.tokenizer.Tokenize(sanitized)
 
 			C := int(point.Y)
 
@@ -462,7 +479,7 @@ func (b *NaiveBayes) UpdateSanitize(sanitize func(rune) bool) {
 // The default implementation will convert the input to lower
 // case and split on the space character.
 func (b *NaiveBayes) UpdateTokenizer(tokenizer Tokenizer) {
-	b.Tokenizer = tokenizer
+	b.tokenizer = tokenizer
 }
 
 // String implements the fmt interface for clean printing. Here
@@ -510,13 +527,21 @@ func (b *NaiveBayes) PersistToFile(path string) error {
 // in text models vs. others because the text models
 // usually have much larger storage requirements.
 func (b *NaiveBayes) Restore(data []byte) error {
-	return b.RestoreWithFuncs(bytes.NewReader(data), base.OnlyWordsAndNumbers, &SimpleTokenizer{SplitOn: " "})
+	return b.RestoreWithFuncs(
+		bytes.NewReader(data),
+		base.OnlyWordsAndNumbers,
+		NewDefaultSanitizer(),
+	)
 }
 
 // RestoreWithFuncs takes raw JSON data of a model and
 // restores a model from it. The tokenizer and sanitizer
 // passed in will be assigned to the restored model.
-func (b *NaiveBayes) RestoreWithFuncs(data io.Reader, sanitizer func(rune) bool, tokenizer Tokenizer) error {
+func (b *NaiveBayes) RestoreWithFuncs(
+	data io.Reader,
+	sanitizer func(rune) bool,
+	tokenizer Tokenizer,
+) error {
 	if b == nil {
 		return errors.New("Cannot restore a model to a nil pointer")
 	}
@@ -525,7 +550,7 @@ func (b *NaiveBayes) RestoreWithFuncs(data io.Reader, sanitizer func(rune) bool,
 		return err
 	}
 	b.sanitize = transform.RemoveFunc(sanitizer)
-	b.Tokenizer = tokenizer
+	b.tokenizer = tokenizer
 	return nil
 }
 
@@ -545,7 +570,7 @@ func (b *NaiveBayes) RestoreFromFile(path string) error {
 		return fmt.Errorf("ERROR: you just tried to restore your model from a file with no path! That's a no-no. Try it with a valid filepath")
 	}
 
-	bytes, err := ioutil.ReadFile(path)
+	bytes, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}
