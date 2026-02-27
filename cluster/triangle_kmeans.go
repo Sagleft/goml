@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/cdipaolo/goml/base"
+	"github.com/Sagleft/goml/base"
 )
 
 /*
@@ -21,13 +21,13 @@ clusters. The revised algorithm does use O(n)
 auxillary space (more like 3n + k^2), and computes
 a lot on these extra data structures, but
 
-	"Our algorithm reduces the number of distance
-	 calculations so dramatically that its overhead
-	 time is often greater than the time spent on
-	 distance calculations. However, the total
-	 execution time is always much less than the
-	 time required by standard k-means"
-    (Eklan 2003, University of California, San Diego)
+		"Our algorithm reduces the number of distance
+		 calculations so dramatically that its overhead
+		 time is often greater than the time spent on
+		 distance calculations. However, the total
+		 execution time is always much less than the
+		 time required by standard k-means"
+	    (Eklan 2003, University of California, San Diego)
 
 Note that this algorithm also uses k-means++
 instantiation for more reliable clustering. The
@@ -386,7 +386,8 @@ func (k *TriangleKMeans) recalculateCentroids() [][]float64 {
 // struct comments) this model uses the Triangle Inequality
 // to decrease significantly the number of required distance
 // calculations. The origininal paper is seen here:
-//     http://www.aaai.org/Papers/ICML/2003/ICML03-022.pdf
+//
+//	http://www.aaai.org/Papers/ICML/2003/ICML03-022.pdf
 func (k *TriangleKMeans) Learn() error {
 	if k.trainingSet == nil {
 		err := fmt.Errorf("ERROR: Attempting to learn with no training examples!\n")
@@ -558,7 +559,7 @@ func (k *TriangleKMeans) String() string {
 // unsupervised classification assigned during
 // learning.
 //
-//    model.Guesses[i] = E[k.trainingSet[i]]
+//	model.Guesses[i] = E[k.trainingSet[i]]
 func (k *TriangleKMeans) Guesses() []int {
 	return k.guesses
 }

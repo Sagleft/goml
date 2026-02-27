@@ -36,58 +36,58 @@
 //
 // Example Online, Binary Perceptron (no layers, etc.):
 //
-//      // create the channel of data and errors
-//      stream := make(chan base.Datapoint, 100)
-//      errors := make(chan error)
+//	     // create the channel of data and errors
+//	     stream := make(chan base.Datapoint, 100)
+//	     errors := make(chan error)
 //
-//      model := NewPerceptron(0.1, 1, stream)
+//	     model := NewPerceptron(0.1, 1, stream)
 //
-//      go model.OnlineLearn(errors, stream, func (theta []float64) {
-//          fmt.Fprintf(p.Output, "Theta updated to %v!\n", theta)
-//      })
+//	     go model.OnlineLearn(errors, stream, func (theta []float64) {
+//	         fmt.Fprintf(p.Output, "Theta updated to %v!\n", theta)
+//	     })
 //
-//      // start passing data to our datastream
-//      //
-//      // we could have data already in our channel
-//      // when we instantiated the Perceptron, though
-//      //
-//      // and note that this data could be coming from
-//      // some web server, or whatever!!
-// 		go func() {
-// 			for i := -500.0; abs(i) > 1; i *= -0.997 {
-// 				if 10 + (i-20)/2 > 0 {
-// 					stream <- base.Datapoint{
-// 						X: []float64{i-20},
-// 						Y: []float64{1.0},
-// 					}
-// 				} else {
-// 					stream <- base.Datapoint{
-// 						X: []float64{i-20},
-// 						Y: []float64{0},
-// 			        }
-// 			    }
-// 			}
-// 		}()
+//	     // start passing data to our datastream
+//	     //
+//	     // we could have data already in our channel
+//	     // when we instantiated the Perceptron, though
+//	     //
+//	     // and note that this data could be coming from
+//	     // some web server, or whatever!!
+//			go func() {
+//				for i := -500.0; abs(i) > 1; i *= -0.997 {
+//					if 10 + (i-20)/2 > 0 {
+//						stream <- base.Datapoint{
+//							X: []float64{i-20},
+//							Y: []float64{1.0},
+//						}
+//					} else {
+//						stream <- base.Datapoint{
+//							X: []float64{i-20},
+//							Y: []float64{0},
+//				        }
+//				    }
+//				}
+//			}()
 //
-//      // close the dataset
-//      close(stream)
-//      for {
-//          err, more := <- errors
-//          if err != nil {
-//              fmt.Fprintf(p.Output, "Error passed: %v", err)
-//          } else {
-//              // training is done!
-//              break
-//          }
-//      }
+//	     // close the dataset
+//	     close(stream)
+//	     for {
+//	         err, more := <- errors
+//	         if err != nil {
+//	             fmt.Fprintf(p.Output, "Error passed: %v", err)
+//	         } else {
+//	             // training is done!
+//	             break
+//	         }
+//	     }
 //
-//      // now you can predict!!
-//      // note that guess is a []float64 of len() == 1
-//      // when it isn't nil
-//      guess, err := model.Predict([]float64{i})
-//      if err != nil {
-//           panic("EGATZ!! I FOUND AN ERROR! BETTER CHECK YOUR INPUT DIMENSIONS!")
-//      }
+//	     // now you can predict!!
+//	     // note that guess is a []float64 of len() == 1
+//	     // when it isn't nil
+//	     guess, err := model.Predict([]float64{i})
+//	     if err != nil {
+//	          panic("EGATZ!! I FOUND AN ERROR! BETTER CHECK YOUR INPUT DIMENSIONS!")
+//	     }
 package perceptron
 
 import (
@@ -98,7 +98,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/cdipaolo/goml/base"
+	"github.com/Sagleft/goml/base"
 )
 
 // Perceptron represents the perceptron online
@@ -112,9 +112,10 @@ import (
 // to 0 and 1, but the actual hypothesis runs the
 // input with weights through a step function, not
 // a sigmoid, namely:
-//     if (θx * y < 0) {
-//         θ := θ + α*yx
-//     }
+//
+//	if (θx * y < 0) {
+//	    θ := θ + α*yx
+//	}
 //
 // In this implementation, data is passed through a
 // channel, where the learn function is run in a
@@ -254,60 +255,60 @@ func (p *Perceptron) Predict(x []float64, normalize ...bool) ([]float64, error) 
 //
 // Example Online, Binary Perceptron (no layers, etc.):
 //
-//      // create the channel of data and errors
-//      stream := make(chan base.Datapoint, 100)
-//      errors := make(chan error)
+//	     // create the channel of data and errors
+//	     stream := make(chan base.Datapoint, 100)
+//	     errors := make(chan error)
 //
-//      model := NewPerceptron(0.1, 1, stream)
+//	     model := NewPerceptron(0.1, 1, stream)
 //
-//      go model.OnlineLearn(errors, stream, func (theta []float64) {
-//          // do something with the new theta (persist
-//          // to database?) in here.
-//          fmt.Fprintf(p.Output, "Theta updated to %v!\n", theta)
-//      })
+//	     go model.OnlineLearn(errors, stream, func (theta []float64) {
+//	         // do something with the new theta (persist
+//	         // to database?) in here.
+//	         fmt.Fprintf(p.Output, "Theta updated to %v!\n", theta)
+//	     })
 //
-//      // start passing data to our datastream
-//      //
-//      // we could have data already in our channel
-//      // when we instantiated the Perceptron, though
-//      //
-//      // and note that this data could be coming from
-//      // some web server, or whatever!!
-// 	    go func() {
-//             for i := -500.0; abs(i) > 1; i *= -0.997 {
-//                 if 10 + (i-20)/2 > 0 {
-//                     stream <- base.Datapoint{
-//                         X: []float64{i-20},
-//                         Y: []float64{1.0},
-//                     }
-//                 } else {
-//                     stream <- base.Datapoint{
-//                         X: []float64{i-20},
-//                         Y: []float64{0},
-//                     }
-//                 }
-//             }
-//         }()
+//	     // start passing data to our datastream
+//	     //
+//	     // we could have data already in our channel
+//	     // when we instantiated the Perceptron, though
+//	     //
+//	     // and note that this data could be coming from
+//	     // some web server, or whatever!!
+//		    go func() {
+//	            for i := -500.0; abs(i) > 1; i *= -0.997 {
+//	                if 10 + (i-20)/2 > 0 {
+//	                    stream <- base.Datapoint{
+//	                        X: []float64{i-20},
+//	                        Y: []float64{1.0},
+//	                    }
+//	                } else {
+//	                    stream <- base.Datapoint{
+//	                        X: []float64{i-20},
+//	                        Y: []float64{0},
+//	                    }
+//	                }
+//	            }
+//	        }()
 //
-//      // close the dataset
-//      close(stream)
-//      for {
-//          err, more := <- errors
-//          if err != nil {
-//              fmt.Fprintf(p.Output, "Error passed: %v", err)
-//          } else {
-//              // training is done!
-//              break
-//          }
-//      }
+//	     // close the dataset
+//	     close(stream)
+//	     for {
+//	         err, more := <- errors
+//	         if err != nil {
+//	             fmt.Fprintf(p.Output, "Error passed: %v", err)
+//	         } else {
+//	             // training is done!
+//	             break
+//	         }
+//	     }
 //
-//      // now you can predict!!
-//      // note that guess is a []float64 of len() == 1
-//      // when it isn't nil
-//      guess, err := model.Predict([]float64{i})
-//      if err != nil {
-//           panic("EGATZ!! I FOUND AN ERROR! BETTER CHECK YOUR INPUT DIMENSIONS!")
-//      }
+//	     // now you can predict!!
+//	     // note that guess is a []float64 of len() == 1
+//	     // when it isn't nil
+//	     guess, err := model.Predict([]float64{i})
+//	     if err != nil {
+//	          panic("EGATZ!! I FOUND AN ERROR! BETTER CHECK YOUR INPUT DIMENSIONS!")
+//	     }
 func (p *Perceptron) OnlineLearn(errors chan error, dataset chan base.Datapoint, onUpdate func([][]float64), normalize ...bool) {
 	if errors == nil {
 		errors = make(chan error)
@@ -384,7 +385,8 @@ func (p *Perceptron) OnlineLearn(errors chan error, dataset chan base.Datapoint,
 //
 // Note that I'm using the terniary operator to represent
 // the perceptron:
-//     h(θ,x) = θx > 0 ? 1 : 0
+//
+//	h(θ,x) = θx > 0 ? 1 : 0
 func (p *Perceptron) String() string {
 	features := len(p.Parameters) - 1
 	if len(p.Parameters) == 0 {

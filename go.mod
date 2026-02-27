@@ -1,4 +1,4 @@
-module github.com/cdipaolo/goml
+module github.com/Sagleft/goml
 
 go 1.17
 

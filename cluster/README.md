@@ -1,7 +1,7 @@
 ## Clustering Algorithms (Supervised and Unsupervised)
-### `import "github.com/cdipaolo/goml/cluster"`
+### `import "github.com/Sagleft/goml/cluster"`
 
-[![GoDoc](https://godoc.org/github.com/cdipaolo/goml/cluster?status.svg)](https://godoc.org/github.com/cdipaolo/goml/cluster)
+[![GoDoc](https://godoc.org/github.com/Sagleft/goml/cluster?status.svg)](https://godoc.org/github.com/Sagleft/goml/cluster)
 
 This part of the `goml` package implements clustering algorithms, unsupervised _and_ supervised, to give the user options about what model they want to use.
 

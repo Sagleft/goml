@@ -85,7 +85,7 @@ import (
 
 	"golang.org/x/text/transform"
 
-	"github.com/cdipaolo/goml/base"
+	"github.com/Sagleft/goml/base"
 )
 
 /*
@@ -93,7 +93,9 @@ NaiveBayes is a general classification
 model that calculates the probability
 that a datapoint is part of a class
 by using Bayes Rule:
+
 	P(y|x) = P(x|y)*P(y)/P(x)
+
 The unique part of this model is that
 it assumes words are unrelated to
 eachother. For example, the probability
@@ -119,13 +121,17 @@ because it's just the probability of seeing
 a certain document given the dataset we can
 make the following transformation to be
 able to classify without as much classification:
+
 	Class(x) = argmax_c{P(y = c) * ∏P(x|y = c)}
+
 And we can use logarithmic transformations to
 make this calculation more computer-practical
 (multiplying a bunch of probabilities on [0,1]
 will always result in a very small number
 which could easily underflow the float value):
+
 	Class(x) = argmax_c{log(P(y = c)) + Σ log(P(x|y = c)0}
+
 Much better. That's our model!
 */
 type NaiveBayes struct {

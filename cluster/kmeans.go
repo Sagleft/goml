@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/cdipaolo/goml/base"
+	"github.com/Sagleft/goml/base"
 )
 
 // diff returns the square magnitude of the
@@ -402,96 +402,97 @@ centroid vector for that class
 Ex: [[2.0], [1.23, 4.271, 6.013, 7.20312]]
 
 The algorithm performs the following update:
-    0. Get new point x
-    1. Determine the closest cluster μ[i] to point x
-    2. Update the cluster center: μ[i] := μ[i] + α(x - μ[i])
+ 0. Get new point x
+ 1. Determine the closest cluster μ[i] to point x
+ 2. Update the cluster center: μ[i] := μ[i] + α(x - μ[i])
 
 NOTE that this is an unsupervised model! You
 DO NOT need to pass in the Y param of the
 datapoints!
 
 Example Online K-Means Model:
-    model := NewKMeans(4, 0, nil, OnlineParams{
-        alpha:    0.5,
-        features: 4,
-    })
 
-    go model.OnlineLearn(errors, stream, func(theta [][]float64) {})
+	model := NewKMeans(4, 0, nil, OnlineParams{
+	    alpha:    0.5,
+	    features: 4,
+	})
 
-    go func() {
-        // start passing data to our datastream
-        //
-        // we could have data already in our channel
-        // when we instantiated the model, though
-        for i := -40.0; i < -30; i += 4.99 {
-            for j := -40.0; j < -30; j += 4.99 {
-                for k := -40.0; k < -30; k += 4.99 {
-                    for l := -40.0; l < -30; l += 4.99 {
-                        stream <- base.Datapoint{
-                            X: []float64{i, j, k, l},
-                        }
-                    }
-                }
-            }
-        }
-        for i := -40.0; i < -30; i += 4.99 {
-            for j := 30.0; j < 40; j += 4.99 {
-                for k := -40.0; k < -30; k += 4.99 {
-                    for l := 30.0; l < 40; l += 4.99 {
-                        stream <- base.Datapoint{
-                            X: []float64{i, j, k, l},
-                        }
-                    }
-                }
-            }
-        }
-        for i := 30.0; i < 40; i += 4.99 {
-            for j := -40.0; j < -30; j += 4.99 {
-                for k := 30.0; k < 40; k += 4.99 {
-                    for l := -40.0; l < -30; l += 4.99 {
-                        stream <- base.Datapoint{
-                            X: []float64{i, j, k, l},
-                        }
-                    }
-                }
-            }
-        }
-        for i := 30.0; i < 40; i += 4.99 {
-            for j := -40.0; j < -30; j += 4.99 {
-                for k := -40.0; k < -30; k += 4.99 {
-                    for l := 30.0; l < 40; l += 4.99 {
-                        stream <- base.Datapoint{
-                            X: []float64{i, j, k, l},
-                        }
-                    }
-                }
-            }
-        }
+	go model.OnlineLearn(errors, stream, func(theta [][]float64) {})
 
-        // close the dataset
-        close(stream)
-    }()
+	go func() {
+	    // start passing data to our datastream
+	    //
+	    // we could have data already in our channel
+	    // when we instantiated the model, though
+	    for i := -40.0; i < -30; i += 4.99 {
+	        for j := -40.0; j < -30; j += 4.99 {
+	            for k := -40.0; k < -30; k += 4.99 {
+	                for l := -40.0; l < -30; l += 4.99 {
+	                    stream <- base.Datapoint{
+	                        X: []float64{i, j, k, l},
+	                    }
+	                }
+	            }
+	        }
+	    }
+	    for i := -40.0; i < -30; i += 4.99 {
+	        for j := 30.0; j < 40; j += 4.99 {
+	            for k := -40.0; k < -30; k += 4.99 {
+	                for l := 30.0; l < 40; l += 4.99 {
+	                    stream <- base.Datapoint{
+	                        X: []float64{i, j, k, l},
+	                    }
+	                }
+	            }
+	        }
+	    }
+	    for i := 30.0; i < 40; i += 4.99 {
+	        for j := -40.0; j < -30; j += 4.99 {
+	            for k := 30.0; k < 40; k += 4.99 {
+	                for l := -40.0; l < -30; l += 4.99 {
+	                    stream <- base.Datapoint{
+	                        X: []float64{i, j, k, l},
+	                    }
+	                }
+	            }
+	        }
+	    }
+	    for i := 30.0; i < 40; i += 4.99 {
+	        for j := -40.0; j < -30; j += 4.99 {
+	            for k := -40.0; k < -30; k += 4.99 {
+	                for l := 30.0; l < 40; l += 4.99 {
+	                    stream <- base.Datapoint{
+	                        X: []float64{i, j, k, l},
+	                    }
+	                }
+	            }
+	        }
+	    }
 
-    // this will block until the error
-    // channel is closed in the learning
-    // function (it will, don't worry!)
-    for {
-        err, more := <-errors
-        if err != nil {
-            panic("THERE WAS AN ERROR!!! RUN!!!!")
-          }
-        if !more {
-            break
-        }
-    }
+	    // close the dataset
+	    close(stream)
+	}()
 
-    // Below here all the learning is completed
+	// this will block until the error
+	// channel is closed in the learning
+	// function (it will, don't worry!)
+	for {
+	    err, more := <-errors
+	    if err != nil {
+	        panic("THERE WAS AN ERROR!!! RUN!!!!")
+	      }
+	    if !more {
+	        break
+	    }
+	}
 
-    // predict like usual
-    guess, err = model.Predict([]float64{42,6,10,-32})
-    if err != nil {
-        panic("AAAARGGGH! SHIVER ME TIMBERS! THESE ROTTEN SCOUNDRELS FOUND AN ERROR!!!")
-    }
+	// Below here all the learning is completed
+
+	// predict like usual
+	guess, err = model.Predict([]float64{42,6,10,-32})
+	if err != nil {
+	    panic("AAAARGGGH! SHIVER ME TIMBERS! THESE ROTTEN SCOUNDRELS FOUND AN ERROR!!!")
+	}
 */
 func (k *KMeans) OnlineLearn(errors chan error, dataset chan base.Datapoint, onUpdate func([][]float64), normalize ...bool) {
 	if errors == nil {
@@ -556,7 +557,7 @@ func (k *KMeans) String() string {
 // unsupervised classification assigned during
 // learning.
 //
-//    model.Guesses[i] = E[k.trainingSet[i]]
+//	model.Guesses[i] = E[k.trainingSet[i]]
 func (k *KMeans) Guesses() []int {
 	return k.guesses
 }
