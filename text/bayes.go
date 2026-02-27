@@ -166,7 +166,7 @@ type NaiveBayes struct {
 
 	// tokenizer is used by a model
 	// to split the input into tokens
-	Tokenizer Tokenizer `json:"tokenizer"`
+	tokenizer Tokenizer
 
 	// Output is the io.Writer used for logging
 	// and printing. Defaults to os.Stdout.
@@ -270,7 +270,7 @@ func NewNaiveBayes(stream <-chan base.TextDatapoint, classes uint8, sanitize fun
 
 		sanitize:  transform.RemoveFunc(sanitize),
 		stream:    stream,
-		Tokenizer: &SimpleTokenizer{SplitOn: " "},
+		tokenizer: &SimpleTokenizer{SplitOn: " "},
 
 		Output: os.Stdout,
 	}
@@ -284,7 +284,7 @@ func (b *NaiveBayes) Predict(sentence string) uint8 {
 	sums := make([]float64, len(b.Count))
 
 	sentence, _, _ = transform.String(b.sanitize, sentence)
-	words := b.Tokenizer.Tokenize(sentence)
+	words := b.tokenizer.Tokenize(sentence)
 	for _, word := range words {
 		w, ok := b.Words.Get(word)
 		if !ok {
@@ -335,7 +335,7 @@ func (b *NaiveBayes) Probability(sentence string) (uint8, float64) {
 	}
 
 	sentence, _, _ = transform.String(b.sanitize, sentence)
-	words := b.Tokenizer.Tokenize(sentence)
+	words := b.tokenizer.Tokenize(sentence)
 	for _, word := range words {
 		w, ok := b.Words.Get(word)
 		if !ok {
@@ -388,7 +388,7 @@ func (b *NaiveBayes) OnlineLearn(errors chan<- error) {
 		if more {
 			// sanitize and break up document
 			sanitized, _, _ := transform.String(b.sanitize, point.X)
-			words := b.Tokenizer.Tokenize(sanitized)
+			words := b.tokenizer.Tokenize(sanitized)
 
 			C := int(point.Y)
 
@@ -462,7 +462,7 @@ func (b *NaiveBayes) UpdateSanitize(sanitize func(rune) bool) {
 // The default implementation will convert the input to lower
 // case and split on the space character.
 func (b *NaiveBayes) UpdateTokenizer(tokenizer Tokenizer) {
-	b.Tokenizer = tokenizer
+	b.tokenizer = tokenizer
 }
 
 // String implements the fmt interface for clean printing. Here
@@ -525,7 +525,7 @@ func (b *NaiveBayes) RestoreWithFuncs(data io.Reader, sanitizer func(rune) bool,
 		return err
 	}
 	b.sanitize = transform.RemoveFunc(sanitizer)
-	b.Tokenizer = tokenizer
+	b.tokenizer = tokenizer
 	return nil
 }
 
