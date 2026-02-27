@@ -7,7 +7,7 @@ import (
 	"math"
 	"os"
 
-	"github.com/cdipaolo/goml/base"
+	"github.com/Sagleft/goml/base"
 )
 
 // LocalLinear implements a locally weighted
@@ -41,40 +41,40 @@ import (
 //
 // Example Locally Weighted Linear Regression Usage:
 //
-//     x := [][]float64{}
-//     y := []float64{}
+//	x := [][]float64{}
+//	y := []float64{}
 //
-//     // throw in some junk points which
-//     // should be more-or-less ignored
-//     // by the weighting
-//     for i := -70.0; i < -65; i += 2 {
-//         for j := -70.0; j < -65; j += 2 {
-//             x = append(x, []float64{i, j})
-//             y = append(y, 20*(rand.Float64()-0.5))
-//         }
-//     }
-//     for i := 65.0; i < 70; i += 2 {
-//         for j := 65.0; j < 70; j += 2 {
-//             x = append(x, []float64{i, j})
-//             y = append(y, 20*(rand.Float64()-0.5))
-//         }
-//     }
+//	// throw in some junk points which
+//	// should be more-or-less ignored
+//	// by the weighting
+//	for i := -70.0; i < -65; i += 2 {
+//	    for j := -70.0; j < -65; j += 2 {
+//	        x = append(x, []float64{i, j})
+//	        y = append(y, 20*(rand.Float64()-0.5))
+//	    }
+//	}
+//	for i := 65.0; i < 70; i += 2 {
+//	    for j := 65.0; j < 70; j += 2 {
+//	        x = append(x, []float64{i, j})
+//	        y = append(y, 20*(rand.Float64()-0.5))
+//	    }
+//	}
 //
-//     // put in some linear points
-//     for i := -20.0; i < 20; i++ {
-//         for j := -20.0; j < 20; j++ {
-//             x = append(x, []float64{i, j})
-//             y = append(y, 5*i-5*j-10)
-//         }
-//     }
+//	// put in some linear points
+//	for i := -20.0; i < 20; i++ {
+//	    for j := -20.0; j < 20; j++ {
+//	        x = append(x, []float64{i, j})
+//	        y = append(y, 5*i-5*j-10)
+//	    }
+//	}
 //
-//     model := NewLocalLinear(base.StochasticGA, 1e-4, 0, 0.75, 1500, x, y)
+//	model := NewLocalLinear(base.StochasticGA, 1e-4, 0, 0.75, 1500, x, y)
 //
-//     // now when you predict it'll train off the
-//     // dataset, weighting points closer to the
-//     // targer evaluation more, then return
-//     // the prediction.
-//     guess, err := model.Predict([]float64{10.0, -13.666})
+//	// now when you predict it'll train off the
+//	// dataset, weighting points closer to the
+//	// targer evaluation more, then return
+//	// the prediction.
+//	guess, err := model.Predict([]float64{10.0, -13.666})
 type LocalLinear struct {
 	// alpha and maxIterations are used only for
 	// GradientAscent during learning. If maxIterations
@@ -120,26 +120,26 @@ type LocalLinear struct {
 //
 // Example Least Squares (Stochastic GA):
 //
-//     // optimization method: Stochastic Gradient Ascent
-//     // Learning rate: 1e-4
-//     // Regulatization term: 6
-//     // Weight Bandwidth: 1.0
-//     // Max Iterations: 800
-//     // Dataset to learn fron: testX
-//     // Expected results dataset: testY
-//     model := NewLocalLinear(base.StochasticGA, 1e-4, 6, 1.0, 800, testX, testY)
+//	// optimization method: Stochastic Gradient Ascent
+//	// Learning rate: 1e-4
+//	// Regulatization term: 6
+//	// Weight Bandwidth: 1.0
+//	// Max Iterations: 800
+//	// Dataset to learn fron: testX
+//	// Expected results dataset: testY
+//	model := NewLocalLinear(base.StochasticGA, 1e-4, 6, 1.0, 800, testX, testY)
 //
-//     err := model.Learn()
-//     if err != nil {
-//         panic("SOME ERROR!! RUN!")
-//     }
+//	err := model.Learn()
+//	if err != nil {
+//	    panic("SOME ERROR!! RUN!")
+//	}
 //
-//     // now I want to predict off of this
-//     // Ordinary Least Squares model!
-//     guess, err = model.Predict([]float64{10000,6})
-//     if err != nil {
-//         panic("AAAARGGGH! SHIVER ME TIMBERS! THESE ROTTEN SCOUNDRELS FOUND AN ERROR!!!")
-//     }
+//	// now I want to predict off of this
+//	// Ordinary Least Squares model!
+//	guess, err = model.Predict([]float64{10000,6})
+//	if err != nil {
+//	    panic("AAAARGGGH! SHIVER ME TIMBERS! THESE ROTTEN SCOUNDRELS FOUND AN ERROR!!!")
+//	}
 func NewLocalLinear(method base.OptimizationMethod, alpha, regularization, bandwidth float64, maxIterations int, trainingSet [][]float64, expectedResults []float64) *LocalLinear {
 	var params []float64
 	if trainingSet == nil || len(trainingSet) == 0 {

@@ -1,7 +1,7 @@
 ## Text Classification
-### `import "github.com/cdipaolo/goml/text"`
+### `import "github.com/Sagleft/goml/text"`
 
-[![GoDoc](https://godoc.org/github.com/cdipaolo/goml/text?status.svg)](https://godoc.org/github.com/cdipaolo/goml/text)
+[![GoDoc](https://godoc.org/github.com/Sagleft/goml/text?status.svg)](https://godoc.org/github.com/Sagleft/goml/text)
 
 This package implements text classification algorithms. For algorithms that could be used numberically (most/all of them,) this package makes working with text documents easier than hand-rolling a bag-of-words model and integrating it with other models
 

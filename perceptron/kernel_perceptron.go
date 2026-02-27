@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/cdipaolo/goml/base"
+	"github.com/Sagleft/goml/base"
 )
 
 // KernelPerceptron represents the perceptron online
@@ -23,7 +23,8 @@ import (
 // The hypothesis is a generalized version of the
 // regular perceptron, where i∈M where M are all
 // misclassified examples:
-//      sgn(Σ αy[i] * K(x[i], x))
+//
+//	sgn(Σ αy[i] * K(x[i], x))
 //
 // In this implementation, data is passed through a
 // channel, where the learn function is run in a
@@ -148,71 +149,71 @@ func (p *KernelPerceptron) Predict(x []float64, normalize ...bool) ([]float64, e
 //
 // Example Online Kernel Perceptron:
 //
-//     // create the channel of data and errors
-//     stream := make(chan base.Datapoint, 100)
-//     errors := make(chan error)
+//	// create the channel of data and errors
+//	stream := make(chan base.Datapoint, 100)
+//	errors := make(chan error)
 //
-//     // The kernel could be any kernel from the Base
-//     // package, or it could be your own function!
-//     // I suggest you look at the code for the kernels
-//     // if you want to make sense of them. It's pretty
-//     // intuitive and simple.
-//     model := NewKernelPerceptron(base.GaussianKernel(50))
+//	// The kernel could be any kernel from the Base
+//	// package, or it could be your own function!
+//	// I suggest you look at the code for the kernels
+//	// if you want to make sense of them. It's pretty
+//	// intuitive and simple.
+//	model := NewKernelPerceptron(base.GaussianKernel(50))
 //
-//     go model.OnlineLearn(errors, stream, func(SV [][]float64) {
-//         // do something with the newly added support
-//         // vector (persist to database?) in here.
-//     })
+//	go model.OnlineLearn(errors, stream, func(SV [][]float64) {
+//	    // do something with the newly added support
+//	    // vector (persist to database?) in here.
+//	})
 //
-//     go func() {
-//         for iterations := 0; iterations < 20; iterations++ {
-//             for i := -200.0; abs(i) > 1; i *= -0.7 {
-//                 for j := -200.0; abs(j) > 1; j *= -0.7 {
-//                     for k := -200.0; abs(k) > 1; k *= -0.7 {
-//                         for l := -200.0; abs(l) > 1; l *= -0.7 {
-//                             if i/2+2*k-4*j+2*l+3 > 0 {
-//                                 stream <- base.Datapoint{
-//                                     X: []float64{i, j, k, l},
-//                                     Y: []float64{1.0},
-//                                 }
-//                             } else {
-//                                 stream <- base.Datapoint{
-//                                     X: []float64{i, j, k, l},
-//                                     Y: []float64{-1.0},
-//                                 }
-//                             }
-//                         }
-//                     }
-//                 }
-//             }
-//         }
+//	go func() {
+//	    for iterations := 0; iterations < 20; iterations++ {
+//	        for i := -200.0; abs(i) > 1; i *= -0.7 {
+//	            for j := -200.0; abs(j) > 1; j *= -0.7 {
+//	                for k := -200.0; abs(k) > 1; k *= -0.7 {
+//	                    for l := -200.0; abs(l) > 1; l *= -0.7 {
+//	                        if i/2+2*k-4*j+2*l+3 > 0 {
+//	                            stream <- base.Datapoint{
+//	                                X: []float64{i, j, k, l},
+//	                                Y: []float64{1.0},
+//	                            }
+//	                        } else {
+//	                            stream <- base.Datapoint{
+//	                                X: []float64{i, j, k, l},
+//	                                Y: []float64{-1.0},
+//	                            }
+//	                        }
+//	                    }
+//	                }
+//	            }
+//	        }
+//	    }
 //
-//         // close the dataset to tell the model
-//         // to stop learning when it finishes reading
-//         // what's left in the channel
-//         close(stream)
-//     }()
+//	    // close the dataset to tell the model
+//	    // to stop learning when it finishes reading
+//	    // what's left in the channel
+//	    close(stream)
+//	}()
 //
-//     // this will block until the error
-//     // channel is closed in the learning
-//     // function (it will, don't worry!)
-//     for {
-//         err, more := <-errors
-//         if err != nil {
-//             panic("THERE WAS AN ERROR!!! RUN!!!!")
-//         }
-//         if !more {
-//             break
-//         }
-//     }
+//	// this will block until the error
+//	// channel is closed in the learning
+//	// function (it will, don't worry!)
+//	for {
+//	    err, more := <-errors
+//	    if err != nil {
+//	        panic("THERE WAS AN ERROR!!! RUN!!!!")
+//	    }
+//	    if !more {
+//	        break
+//	    }
+//	}
 //
-//     // Below here all the learning is completed
+//	// Below here all the learning is completed
 //
-//     // predict like usual
-//     guess, err = model.Predict([]float64{42,6,10,-32})
-//     if err != nil {
-//         panic("AAAARGGGH! SHIVER ME TIMBERS! THESE ROTTEN SCOUNDRELS FOUND AN ERROR!!!")
-//     }
+//	// predict like usual
+//	guess, err = model.Predict([]float64{42,6,10,-32})
+//	if err != nil {
+//	    panic("AAAARGGGH! SHIVER ME TIMBERS! THESE ROTTEN SCOUNDRELS FOUND AN ERROR!!!")
+//	}
 func (p *KernelPerceptron) OnlineLearn(errors chan error, dataset chan base.Datapoint, onUpdate func([][]float64), normalize ...bool) {
 	if dataset == nil {
 		errors <- fmt.Errorf("ERROR: Attempting to learn with a nil data stream!\n")
@@ -281,7 +282,8 @@ func (p *KernelPerceptron) OnlineLearn(errors chan error, dataset chan base.Data
 //
 // Note that I'm using the terniary operator to represent
 // the perceptron:
-//     h(θ,x) = Σ y[i]*K(x[i], x`) > 0 ? 1 : 0
+//
+//	h(θ,x) = Σ y[i]*K(x[i], x`) > 0 ? 1 : 0
 func (p *KernelPerceptron) String() string {
 	return fmt.Sprintf("h(θ,x) = Σ y[i]*K(x[i], x`) > 0 ? 1 : 0\n\tTotal Support Vectors: %v\n", len(p.SV))
 }

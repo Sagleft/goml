@@ -1,7 +1,7 @@
 ## `goml`
 ### Golang Machine Learning, On The Wire
 
-[![GoDoc](https://godoc.org/github.com/cdipaolo/goml?status.svg)](https://godoc.org/github.com/cdipaolo/goml)
+[![GoDoc](https://godoc.org/github.com/Sagleft/goml?status.svg)](https://godoc.org/github.com/Sagleft/goml)
 [![wercker status](https://app.wercker.com/status/50a8cfa6170784809e3308941212cef4/s "wercker status")](https://app.wercker.com/project/bykey/50a8cfa6170784809e3308941212cef4)
 
 `goml` is a machine learning library written entirely in Golang which lets the average developer include machine learning into their applications. (pronounced like the data format 'toml')
@@ -15,14 +15,14 @@ Each package (mentioned below) includes individual README's to learn more about 
 ## Installation
 
 ```bash
-go get github.com/cdipaolo/goml/base
+go get github.com/Sagleft/goml/base
 
 # This could be any other model package if you want
 #
 # Also, the base package is imported already
 # by many of the packages so you might not even
 # need to `go get` the package explicitly
-go get github.com/cdipaolo/goml/perceptron
+go get github.com/Sagleft/goml/perceptron
 ```
 
 ## Documentation

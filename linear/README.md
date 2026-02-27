@@ -1,7 +1,7 @@
 ## Generalized Linear Models
-### `import "github.com/cdipaolo/goml/linear"`
+### `import "github.com/Sagleft/goml/linear"`
 
-[![GoDoc](https://godoc.org/github.com/cdipaolo/goml/linear?status.svg)](https://godoc.org/github.com/cdipaolo/goml/linear)
+[![GoDoc](https://godoc.org/github.com/Sagleft/goml/linear?status.svg)](https://godoc.org/github.com/Sagleft/goml/linear)
 
 This part of the `goml` package implements varied generalized linear models using gradient descent (currently, though more options for optimization methods might be available in the future.)
 

@@ -8,7 +8,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/cdipaolo/goml/base"
+	"github.com/Sagleft/goml/base"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -277,7 +277,7 @@ func TestConcurrentPredictionAndLearningShouldNotFail(t *testing.T) {
 	wg.Wait()
 }
 
-//* Test Persitance To File *//
+// * Test Persitance To File *//
 func TestPersistNaiveBayesShouldPass1(t *testing.T) {
 	var err error
 
