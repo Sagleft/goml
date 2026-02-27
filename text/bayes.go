@@ -83,6 +83,7 @@ import (
 	"strings"
 	"sync"
 
+	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 
 	"github.com/Sagleft/goml/base"
@@ -257,6 +258,18 @@ type Word struct {
 	DocsSeen uint64 `json:"-"`
 }
 
+type runeSanitizer struct {
+	method func(rune) bool
+}
+
+func newRuneSanitizer(m func(rune) bool) *runeSanitizer {
+	return &runeSanitizer{method: m}
+}
+
+func (s *runeSanitizer) Contains(r rune) bool {
+	return s.method(r)
+}
+
 // NewNaiveBayes returns a NaiveBayes model the
 // given number of classes instantiated, ready
 // to learn off the given data stream. The sanitization
@@ -268,7 +281,7 @@ func NewNaiveBayes(stream <-chan base.TextDatapoint, classes uint8, sanitize fun
 		Count:         make([]uint64, classes),
 		Probabilities: make([]float64, classes),
 
-		sanitize:  transform.RemoveFunc(sanitize),
+		sanitize:  runes.Remove(newRuneSanitizer(sanitize)),
 		stream:    stream,
 		tokenizer: &SimpleTokenizer{SplitOn: " "},
 
