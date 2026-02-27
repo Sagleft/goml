@@ -366,16 +366,16 @@ func TestSimpleTokenizer(t *testing.T) {
 	spaces := NewDefaultSanitizer()
 	commas := SimpleTokenizer{SplitOn: ","}
 	spaceTests := []test{
-		test{input: "My,mo ther,is,in,Los,Angeles", output: []string{"my,mo", "ther,is,in,los,angeles"}},
-		test{input: "Mother,Los,Angeles", output: []string{"mother,los,angeles"}},
-		test{input: "Love the	CiTy", output: []string{"love", "the	city"}},
+		{input: "My,mo ther,is,in,Los,Angeles", output: []string{"my,mo", "ther,is,in,los,angeles"}},
+		{input: "Mother,Los,Angeles", output: []string{"mother,los,angeles"}},
+		{input: "Love the	CiTy", output: []string{"love", "the	city"}},
 		// there is one tab in the input, and one in the output fwiw
 	}
 	commaTests := []test{
-		test{input: "My,mo~~~ther,is,in,Los,Angeles", output: []string{"my", "mo~~~ther", "is", "in", "los", "angeles"}},
-		test{input: "Mother,Los,Angeles", output: []string{"mother", "los", "angeles"}},
-		test{input: "Love,the,CiTy", output: []string{"love", "the", "city"}},
-		test{input: "Love	the	CiTy", output: []string{"love	the	city"}},
+		{input: "My,mo~~~ther,is,in,Los,Angeles", output: []string{"my", "mo~~~ther", "is", "in", "los", "angeles"}},
+		{input: "Mother,Los,Angeles", output: []string{"mother", "los", "angeles"}},
+		{input: "Love,the,CiTy", output: []string{"love", "the", "city"}},
+		{input: "Love	the	CiTy", output: []string{"love	the	city"}},
 	}
 	for _, testCase := range spaceTests {
 		if !equalStringSlices(testCase.output, spaces.Tokenize(testCase.input)) {
