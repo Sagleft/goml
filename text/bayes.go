@@ -187,6 +187,10 @@ type SimpleTokenizer struct {
 	SplitOn string
 }
 
+func NewDefaultSanitizer() *SimpleTokenizer {
+	return &SimpleTokenizer{SplitOn: " "}
+}
+
 // Tokenize splits input sentences into a lowecase slice
 // of strings. The tokenizer's SlitOn string is used as a
 // delimiter and it
@@ -283,7 +287,7 @@ func NewNaiveBayes(stream <-chan base.TextDatapoint, classes uint8, sanitize fun
 
 		sanitize:  runes.Remove(newRuneSanitizer(sanitize)),
 		stream:    stream,
-		tokenizer: &SimpleTokenizer{SplitOn: " "},
+		tokenizer: NewDefaultSanitizer(),
 
 		Output: os.Stdout,
 	}
@@ -523,13 +527,21 @@ func (b *NaiveBayes) PersistToFile(path string) error {
 // in text models vs. others because the text models
 // usually have much larger storage requirements.
 func (b *NaiveBayes) Restore(data []byte) error {
-	return b.RestoreWithFuncs(bytes.NewReader(data), base.OnlyWordsAndNumbers, &SimpleTokenizer{SplitOn: " "})
+	return b.RestoreWithFuncs(
+		bytes.NewReader(data),
+		base.OnlyWordsAndNumbers,
+		NewDefaultSanitizer(),
+	)
 }
 
 // RestoreWithFuncs takes raw JSON data of a model and
 // restores a model from it. The tokenizer and sanitizer
 // passed in will be assigned to the restored model.
-func (b *NaiveBayes) RestoreWithFuncs(data io.Reader, sanitizer func(rune) bool, tokenizer Tokenizer) error {
+func (b *NaiveBayes) RestoreWithFuncs(
+	data io.Reader,
+	sanitizer func(rune) bool,
+	tokenizer Tokenizer,
+) error {
 	if b == nil {
 		return errors.New("Cannot restore a model to a nil pointer")
 	}
@@ -558,7 +570,7 @@ func (b *NaiveBayes) RestoreFromFile(path string) error {
 		return fmt.Errorf("ERROR: you just tried to restore your model from a file with no path! That's a no-no. Try it with a valid filepath")
 	}
 
-	bytes, err := ioutil.ReadFile(path)
+	bytes, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}
