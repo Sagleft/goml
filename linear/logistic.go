@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math"
 	"os"
 
@@ -99,7 +98,7 @@ func NewLogistic(method base.OptimizationMethod, alpha, regularization float64, 
 	var params []float64
 	if len(features) != 0 {
 		params = make([]float64, features[0]+1)
-	} else if trainingSet == nil || len(trainingSet) == 0 {
+	} else if len(trainingSet) == 0 {
 		params = []float64{}
 	} else {
 		params = make([]float64, len(trainingSet[0])+1)
@@ -222,11 +221,12 @@ func (l *Logistic) Learn() error {
 	fmt.Fprintf(l.Output, "Training:\n\tModel: Logistic (Binary) Classification\n\tOptimization Method: %v\n\tTraining Examples: %v\n\tFeatures: %v\n\tLearning Rate α: %v\n\tRegularization Parameter λ: %v\n...\n\n", l.method, examples, len(l.trainingSet[0]), l.alpha, l.regularization)
 
 	var err error
-	if l.method == base.BatchGA {
+	switch l.method {
+	case base.BatchGA:
 		err = base.GradientAscent(l)
-	} else if l.method == base.StochasticGA {
+	case base.StochasticGA:
 		err = base.StochasticGradientAscent(l)
-	} else {
+	default:
 		err = fmt.Errorf("Chose a training method not implemented for Logistic regression")
 	}
 
@@ -444,14 +444,14 @@ func (l *Logistic) String() string {
 	}
 	var buffer bytes.Buffer
 
-	buffer.WriteString(fmt.Sprintf("h(θ,x) = 1 / (1 + exp(-θx))\nθx = %.3f + ", l.Parameters[0]))
+	fmt.Fprintf(&buffer, "h(θ,x) = 1 / (1 + exp(-θx))\nθx = %.3f + ", l.Parameters[0])
 
 	length := features + 1
 	for i := 1; i < length; i++ {
-		buffer.WriteString(fmt.Sprintf("%.5f(x[%d])", l.Parameters[i], i))
+		fmt.Fprintf(&buffer, "%.5f(x[%d])", l.Parameters[i], i)
 
 		if i != features {
-			buffer.WriteString(fmt.Sprintf(" + "))
+			buffer.WriteString(" + ")
 		}
 	}
 
@@ -563,8 +563,7 @@ func (l *Logistic) PersistToFile(path string) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(path, bytes, os.ModePerm)
-	if err != nil {
+	if err := os.WriteFile(path, bytes, os.ModePerm); err != nil {
 		return err
 	}
 
@@ -586,7 +585,7 @@ func (l *Logistic) RestoreFromFile(path string) error {
 		return fmt.Errorf("ERROR: you just tried to restore your model from a file with no path! That's a no-no. Try it with a valid filepath")
 	}
 
-	bytes, err := ioutil.ReadFile(path)
+	bytes, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}

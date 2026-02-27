@@ -142,7 +142,7 @@ type LocalLinear struct {
 //	}
 func NewLocalLinear(method base.OptimizationMethod, alpha, regularization, bandwidth float64, maxIterations int, trainingSet [][]float64, expectedResults []float64) *LocalLinear {
 	var params []float64
-	if trainingSet == nil || len(trainingSet) == 0 {
+	if len(trainingSet) == 0 {
 		params = []float64{}
 	} else {
 		params = make([]float64, len(trainingSet[0])+1)
@@ -255,7 +255,8 @@ func (l *LocalLinear) Predict(x []float64, normalize ...bool) ([]float64, error)
 	var iter int
 	features := len(l.Parameters)
 
-	if l.method == base.BatchGA {
+	switch l.method {
+	case base.BatchGA:
 		for ; iter < l.maxIterations; iter++ {
 			newTheta := make([]float64, features)
 			for j := range l.Parameters {
@@ -276,7 +277,7 @@ func (l *LocalLinear) Predict(x []float64, normalize ...bool) ([]float64, error)
 				l.Parameters[j] = newθ
 			}
 		}
-	} else if l.method == base.StochasticGA {
+	case base.StochasticGA:
 		for ; iter < l.maxIterations; iter++ {
 			newTheta := make([]float64, features)
 			for i := 0; i < examples; i++ {
@@ -299,7 +300,7 @@ func (l *LocalLinear) Predict(x []float64, normalize ...bool) ([]float64, error)
 				}
 			}
 		}
-	} else {
+	default:
 		return nil, fmt.Errorf("Chose a training method not implemented for LocalLinear regression")
 	}
 
@@ -325,14 +326,14 @@ func (l *LocalLinear) String() string {
 	}
 	var buffer bytes.Buffer
 
-	buffer.WriteString(fmt.Sprintf("h(θ,x) = %.3f + ", l.Parameters[0]))
+	fmt.Fprintf(&buffer, "h(θ,x) = %.3f + ", l.Parameters[0])
 
 	length := features + 1
 	for i := 1; i < length; i++ {
-		buffer.WriteString(fmt.Sprintf("%.5f(x[%d])", l.Parameters[i], i))
+		fmt.Fprintf(&buffer, "%.5f(x[%d])", l.Parameters[i], i)
 
 		if i != features {
-			buffer.WriteString(fmt.Sprintf(" + "))
+			buffer.WriteString(" + ")
 		}
 	}
 

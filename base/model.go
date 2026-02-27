@@ -16,7 +16,7 @@ type OptimizationMethod string
 // methods you can use.
 const (
 	BatchGA      OptimizationMethod = "Batch Gradient Ascent"
-	StochasticGA                    = "Stochastic Gradient Descent"
+	StochasticGA OptimizationMethod = "Stochastic Gradient Descent"
 )
 
 // Model is an interface that can Train based on

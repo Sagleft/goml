@@ -394,14 +394,14 @@ func (p *Perceptron) String() string {
 	}
 	var buffer bytes.Buffer
 
-	buffer.WriteString(fmt.Sprintf("h(θ,x) = θx > 0 ? 1 : 0\nθx = %.3f + ", p.Parameters[0]))
+	fmt.Fprintf(&buffer, "h(θ,x) = θx > 0 ? 1 : 0\nθx = %.3f + ", p.Parameters[0])
 
 	length := features + 1
 	for i := 1; i < length; i++ {
-		buffer.WriteString(fmt.Sprintf("%.5f(x[%d])", p.Parameters[i], i))
+		fmt.Fprintf(&buffer, "%.5f(x[%d])", p.Parameters[i], i)
 
 		if i != features {
-			buffer.WriteString(fmt.Sprintf(" + "))
+			buffer.WriteString(" + ")
 		}
 	}
 
