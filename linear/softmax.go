@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math"
 	"os"
 
@@ -83,7 +82,7 @@ func NewSoftmax(method base.OptimizationMethod, alpha, regularization float64, k
 		for i := range params {
 			params[i] = make([]float64, features[0]+1)
 		}
-	} else if trainingSet == nil || len(trainingSet) == 0 {
+	} else if len(trainingSet) == 0 {
 		for i := range params {
 			params[i] = []float64{}
 		}
@@ -217,7 +216,8 @@ func (s *Softmax) Learn() error {
 	fmt.Fprintf(s.Output, "Training:\n\tModel: Softmax Classification\n\tOptimization Method: %v\n\tTraining Examples: %v\n\t Classification Dimensions: %v\n\tFeatures: %v\n\tLearning Rate α: %v\n\tRegularization Parameter λ: %v\n...\n\n", s.method, examples, s.k, len(s.trainingSet[0]), s.alpha, s.regularization)
 
 	var err error
-	if s.method == base.BatchGA {
+	switch s.method {
+	case base.BatchGA:
 		err = func() error {
 			// if the iterations given is 0, set it to be
 			// 5000 (seems reasonable base value)
@@ -257,7 +257,7 @@ func (s *Softmax) Learn() error {
 
 			return nil
 		}()
-	} else if s.method == base.StochasticGA {
+	case base.StochasticGA:
 		err = func() error {
 			// if the iterations given is 0, set it to be
 			// 5000 (seems reasonable base value)
@@ -298,7 +298,7 @@ func (s *Softmax) Learn() error {
 
 			return nil
 		}()
-	} else {
+	default:
 		err = fmt.Errorf("Chose a training method not implemented for Softmax regression")
 	}
 
@@ -678,7 +678,7 @@ func (s *Softmax) PersistToFile(path string) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(path, bytes, os.ModePerm)
+	err = os.WriteFile(path, bytes, os.ModePerm)
 	if err != nil {
 		return err
 	}
@@ -701,7 +701,7 @@ func (s *Softmax) RestoreFromFile(path string) error {
 		return fmt.Errorf("ERROR: you just tried to restore your model from a file with no path! That's a no-no. Try it with a valid filepath")
 	}
 
-	bytes, err := ioutil.ReadFile(path)
+	bytes, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}

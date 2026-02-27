@@ -192,7 +192,7 @@ func TestKNNShouldPass1(t *testing.T) {
 		for j := -12.0; j < -8; j += 0.5 {
 			now := time.Now()
 			guess, err := model.Predict([]float64{i, j})
-			duration += time.Now().Sub(now)
+			duration += time.Since(now)
 			assert.Nil(t, err, "Prediction error should be nil")
 
 			if 0.0 != guess[0] {
@@ -204,7 +204,7 @@ func TestKNNShouldPass1(t *testing.T) {
 		for j := 8.0; j < 12; j += 0.5 {
 			now := time.Now()
 			guess, err := model.Predict([]float64{i, j})
-			duration += time.Now().Sub(now)
+			duration += time.Since(now)
 			assert.Nil(t, err, "Prediction error should be nil")
 
 			if 1.0 != guess[0] {
@@ -218,7 +218,7 @@ func TestKNNShouldPass1(t *testing.T) {
 		for j := -12.0; j < -8; j += 0.5 {
 			now := time.Now()
 			guess, err := model.Predict([]float64{i, j})
-			duration += time.Now().Sub(now)
+			duration += time.Since(now)
 			assert.Nil(t, err, "Prediction error should be nil")
 
 			if 2.0 != guess[0] {
@@ -230,7 +230,7 @@ func TestKNNShouldPass1(t *testing.T) {
 		for j := 8.0; j < 12; j += 0.5 {
 			now := time.Now()
 			guess, err := model.Predict([]float64{i, j})
-			duration += time.Now().Sub(now)
+			duration += time.Since(now)
 			assert.Nil(t, err, "Prediction error should be nil")
 
 			if 3.0 != guess[0] {
@@ -259,7 +259,7 @@ func TestKNNShouldPass2(t *testing.T) {
 		for j := -12.0; j < -8; j += 0.5 {
 			now := time.Now()
 			guess, err := model.Predict([]float64{i, j}, true)
-			duration += time.Now().Sub(now)
+			duration += time.Since(now)
 			assert.Nil(t, err, "Prediction error should be nil")
 
 			if 0.0 != guess[0] {
@@ -271,7 +271,7 @@ func TestKNNShouldPass2(t *testing.T) {
 		for j := 8.0; j < 12; j += 0.5 {
 			now := time.Now()
 			guess, err := model.Predict([]float64{i, j}, true)
-			duration += time.Now().Sub(now)
+			duration += time.Since(now)
 			assert.Nil(t, err, "Prediction error should be nil")
 
 			if 1.0 != guess[0] {
@@ -285,7 +285,7 @@ func TestKNNShouldPass2(t *testing.T) {
 		for j := -12.0; j < -8; j += 0.5 {
 			now := time.Now()
 			guess, err := model.Predict([]float64{i, j}, true)
-			duration += time.Now().Sub(now)
+			duration += time.Since(now)
 			assert.Nil(t, err, "Prediction error should be nil")
 
 			if 2.0 != guess[0] {
@@ -297,7 +297,7 @@ func TestKNNShouldPass2(t *testing.T) {
 		for j := 8.0; j < 12; j += 0.5 {
 			now := time.Now()
 			guess, err := model.Predict([]float64{i, j}, true)
-			duration += time.Now().Sub(now)
+			duration += time.Since(now)
 			assert.Nil(t, err, "Prediction error should be nil")
 
 			if 3.0 != guess[0] {
@@ -324,7 +324,7 @@ func TestKNNShouldPass3(t *testing.T) {
 		for j := -20.0; j < 20; j += 0.5 {
 			now := time.Now()
 			guess, err := model.Predict([]float64{i, j})
-			duration += time.Now().Sub(now)
+			duration += time.Since(now)
 			assert.Nil(t, err, "Prediction error should be nil")
 
 			if 0.0 != guess[0] {
@@ -338,7 +338,7 @@ func TestKNNShouldPass3(t *testing.T) {
 		for j := -20.0; j < 20; j += 0.5 {
 			now := time.Now()
 			guess, err := model.Predict([]float64{i, j})
-			duration += time.Now().Sub(now)
+			duration += time.Since(now)
 			assert.Nil(t, err, "Prediction error should be nil")
 
 			if 1.0 != guess[0] {

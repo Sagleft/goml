@@ -165,7 +165,7 @@ func TestTanhKernelShouldPass1(t *testing.T) {
 
 	// when constant is 0, default to -1.0
 
-	assert.InDelta(t, math.Tanh(1.0-1.0), k([]float64{
+	assert.InDelta(t, math.Tanh(0.0), k([]float64{
 		0.0, 1.0, 1.0, 0.0,
 	}, []float64{
 		0.0, 1.0, 0.0, 0.0,

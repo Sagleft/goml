@@ -13,21 +13,22 @@ import (
 // and a Golang 1D array of 'Y', or expected result,
 // values.
 //
-// Errors are returned if there are any problems
+// # Errors are returned if there are any problems
 //
 // Expected Data Format:
-// - There should be no header/text lines.
-// - The 'Y' (expected value) line should be the last
+//   - There should be no header/text lines.
+//   - The 'Y' (expected value) line should be the last
 //     column of the CSV.
 //
 // Example CSV file with 2 input parameters:
-//     >>>>>>> BEGIN FILE
-//     1.06,2.30,17
-//     17.62,12.06,18.92
-//     11.623,1.1,15.093
-//     12.01,6,15.032
-//     ...
-//     >>>>>>> END FILE
+//
+//	>>>>>>> BEGIN FILE
+//	1.06,2.30,17
+//	17.62,12.06,18.92
+//	11.623,1.1,15.093
+//	12.01,6,15.032
+//	...
+//	>>>>>>> END FILE
 func LoadDataFromCSV(filepath string) ([][]float64, []float64, error) {
 	_, err := os.Stat(filepath)
 	if err != nil {
@@ -148,7 +149,6 @@ func LoadDataFromCSVToStream(filepath string, data chan Datapoint, errors chan e
 
 	close(errors)
 	close(data)
-	return
 }
 
 // SaveDataToCSV takes in a absolute filepath, as well
