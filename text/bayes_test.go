@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/Sagleft/goml/base"
+	cmap "github.com/orcaman/concurrent-map/v2"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -336,7 +337,7 @@ func TestPersistNaiveBayesShouldPass1(t *testing.T) {
 	err = model.PersistToFile("/tmp/.goml/Bayes.json")
 	assert.Nil(t, err, "Persistance error should be nil")
 
-	model.Words = concurrentMap{}
+	model.Words = cmap.New[Word]()
 
 	class, p = model.Probability("Mother Los Angeles")
 	assert.Equal(t, p, 0.5, "With a blank model the prediction should be 0.5 for both classes", p)

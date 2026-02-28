@@ -81,12 +81,12 @@ import (
 	"math"
 	"os"
 	"strings"
-	"sync"
 
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 
 	"github.com/Sagleft/goml/base"
+	cmap "github.com/orcaman/concurrent-map/v2"
 )
 
 /*
@@ -139,7 +139,7 @@ type NaiveBayes struct {
 	// Words holds a map of words
 	// to their corresponding Word
 	// structure
-	Words concurrentMap `json:"words"`
+	Words cmap.ConcurrentMap[string, Word] `json:"words"`
 
 	// Count holds the number of times
 	// class i was seen as Count[i]
@@ -200,43 +200,6 @@ func (t *SimpleTokenizer) Tokenize(sentence string) []string {
 	return strings.Split(strings.ToLower(sentence), t.SplitOn)
 }
 
-// concurrentMap allows concurrency-friendly map
-// access via its exported Get and Set methods
-type concurrentMap struct {
-	sync.RWMutex
-	words map[string]Word
-}
-
-func (m *concurrentMap) MarshalJSON() ([]byte, error) {
-	return json.Marshal(m.words)
-}
-
-func (m *concurrentMap) UnmarshalJSON(data []byte) error {
-	err := json.Unmarshal(data, &m.words)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Get looks up a word from h's Word map and should be used
-// in place of a direct map lookup. The only caveat is that
-// it will always return the 'success' boolean
-func (m *concurrentMap) Get(w string) (Word, bool) {
-	m.RLock()
-	result, ok := m.words[w]
-	m.RUnlock()
-	return result, ok
-}
-
-// Set sets word k's value to v in h's Word map
-func (m *concurrentMap) Set(k string, v Word) {
-	m.Lock()
-	m.words[k] = v
-	m.Unlock()
-}
-
 // Word holds the structural
 // information needed to calculate
 // the probability of
@@ -281,7 +244,7 @@ func (s *runeSanitizer) Contains(r rune) bool {
 // comply with the transform.RemoveFunc interface
 func NewNaiveBayes(stream <-chan base.TextDatapoint, classes uint8, sanitize func(rune) bool) *NaiveBayes {
 	return &NaiveBayes{
-		Words:         concurrentMap{sync.RWMutex{}, make(map[string]Word)},
+		Words:         cmap.New[Word](),
 		Count:         make([]uint64, classes),
 		Probabilities: make([]float64, classes),
 
