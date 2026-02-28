@@ -14,7 +14,9 @@ func compressJsonBytes(jsonBytes []byte) ([]byte, error) {
 	if _, err := gz.Write(jsonBytes); err != nil {
 		return nil, fmt.Errorf("write: %w", err)
 	}
-	defer gz.Close()
+	if err := gz.Close(); err != nil {
+		return nil, fmt.Errorf("close: %w", err)
+	}
 
 	return buf.Bytes(), nil
 }
