@@ -2,7 +2,6 @@ package linear
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"math"
@@ -673,7 +672,7 @@ func (s *Softmax) PersistToFile(path string) error {
 		return fmt.Errorf("ERROR: you just tried to persist your model to a file with no path!! That's a no-no. Try it with a valid filepath")
 	}
 
-	bytes, err := json.Marshal(s.Parameters)
+	bytes, err := base.JSON.Marshal(s.Parameters)
 	if err != nil {
 		return err
 	}
@@ -706,7 +705,7 @@ func (s *Softmax) RestoreFromFile(path string) error {
 		return err
 	}
 
-	err = json.Unmarshal(bytes, &s.Parameters)
+	err = base.JSON.Unmarshal(bytes, &s.Parameters)
 	if err != nil {
 		return err
 	}

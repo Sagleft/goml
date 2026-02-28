@@ -2,7 +2,6 @@ package linear
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"math"
@@ -558,7 +557,7 @@ func (l *Logistic) PersistToFile(path string) error {
 		return fmt.Errorf("ERROR: you just tried to persist your model to a file with no path!! That's a no-no. Try it with a valid filepath")
 	}
 
-	bytes, err := json.Marshal(l.Parameters)
+	bytes, err := base.JSON.Marshal(l.Parameters)
 	if err != nil {
 		return err
 	}
@@ -590,7 +589,7 @@ func (l *Logistic) RestoreFromFile(path string) error {
 		return err
 	}
 
-	err = json.Unmarshal(bytes, &l.Parameters)
+	err = base.JSON.Unmarshal(bytes, &l.Parameters)
 	if err != nil {
 		return err
 	}

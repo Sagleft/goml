@@ -72,7 +72,6 @@ Example Online Naive Bayes Text Classifier (multiclass):
 package text
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -506,7 +505,7 @@ func NewNaiveBayesFromFile(
 	}
 
 	var m Model
-	if err := json.Unmarshal(bytes, &m); err != nil {
+	if err := base.JSON.Unmarshal(bytes, &m); err != nil {
 		return nil, fmt.Errorf("decode: %w", err)
 	}
 
@@ -521,7 +520,7 @@ func (b *NaiveBayes) PersistModelToFile(
 		return errors.New("model path not set")
 	}
 
-	dataBytes, err := json.Marshal(b.ToModel())
+	dataBytes, err := base.JSON.Marshal(b.ToModel())
 	if err != nil {
 		return fmt.Errorf("encode model: %w", err)
 	}

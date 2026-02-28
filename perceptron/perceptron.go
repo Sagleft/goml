@@ -92,7 +92,6 @@ package perceptron
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -421,7 +420,7 @@ func (p *Perceptron) PersistToFile(path string) error {
 		return fmt.Errorf("ERROR: you just tried to persist your model to a file with no path!! That's a no-no. Try it with a valid filepath")
 	}
 
-	bytes, err := json.Marshal(p.Parameters)
+	bytes, err := base.JSON.Marshal(p.Parameters)
 	if err != nil {
 		return err
 	}
@@ -454,7 +453,7 @@ func (p *Perceptron) RestoreFromFile(path string) error {
 		return err
 	}
 
-	err = json.Unmarshal(bytes, &p.Parameters)
+	err = base.JSON.Unmarshal(bytes, &p.Parameters)
 	if err != nil {
 		return err
 	}
