@@ -446,7 +446,7 @@ func (b *NaiveBayes) UpdateStream(stream chan base.TextDatapoint) {
 // UpdateSanitize updates the NaiveBayes model's
 // text sanitization transformation function
 func (b *NaiveBayes) UpdateSanitize(sanitize func(rune) bool) {
-	b.sanitize = transform.RemoveFunc(sanitize)
+	b.sanitize = runes.Remove(newRuneSanitizer(sanitize))
 }
 
 // UpdateTokenizer updates NaiveBayes model's tokenizer function.
@@ -473,7 +473,7 @@ func (b *NaiveBayes) ToModel() Model {
 	}
 }
 
-func NewNaiveBayesFromModel(m Model) *NaiveBayes {
+func NewNaiveBayesFromModel(m Model, sanitize func(rune) bool) *NaiveBayes {
 	b := &NaiveBayes{
 		Words:         cmap.New[Word](),
 		Count:         m.Count,
@@ -484,10 +484,14 @@ func NewNaiveBayesFromModel(m Model) *NaiveBayes {
 	}
 
 	b.Words.MSet(m.Words)
+	b.UpdateSanitize(sanitize)
 	return b
 }
 
-func NewNaiveBayesFromFile(modelFilepath string) (*NaiveBayes, error) {
+func NewNaiveBayesFromFile(
+	modelFilepath string,
+	sanitize func(rune) bool,
+) (*NaiveBayes, error) {
 	bytes, err := os.ReadFile(modelFilepath)
 	if err != nil {
 		return nil, fmt.Errorf("read: %w", err)
@@ -498,7 +502,7 @@ func NewNaiveBayesFromFile(modelFilepath string) (*NaiveBayes, error) {
 		return nil, fmt.Errorf("decode: %w", err)
 	}
 
-	return NewNaiveBayesFromModel(m), nil
+	return NewNaiveBayesFromModel(m, sanitize), nil
 }
 
 func (b *NaiveBayes) PersistModelToFile(
