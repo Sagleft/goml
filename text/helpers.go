@@ -5,7 +5,11 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
+
+	jsoniter "github.com/json-iterator/go"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func compressJsonBytes(jsonBytes []byte) ([]byte, error) {
 	var buf bytes.Buffer
