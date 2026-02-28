@@ -491,10 +491,18 @@ func NewNaiveBayesFromModel(m Model, sanitize func(rune) bool) *NaiveBayes {
 func NewNaiveBayesFromFile(
 	modelFilepath string,
 	sanitize func(rune) bool,
+	enableGZip bool,
 ) (*NaiveBayes, error) {
 	bytes, err := os.ReadFile(modelFilepath)
 	if err != nil {
 		return nil, fmt.Errorf("read: %w", err)
+	}
+
+	if enableGZip {
+		bytes, err = decompressJsonBytes(bytes)
+		if err != nil {
+			return nil, fmt.Errorf("decompress: %w", err)
+		}
 	}
 
 	var m Model
@@ -518,8 +526,14 @@ func (b *NaiveBayes) PersistModelToFile(
 		return fmt.Errorf("encode model: %w", err)
 	}
 
-	err = os.WriteFile(path, dataBytes, os.ModePerm)
-	if err != nil {
+	if enableGZip {
+		dataBytes, err = compressJsonBytes(dataBytes)
+		if err != nil {
+			return fmt.Errorf("compress: %w", err)
+		}
+	}
+
+	if err := os.WriteFile(path, dataBytes, os.ModePerm); err != nil {
 		return fmt.Errorf("write: %w", err)
 	}
 	return nil
