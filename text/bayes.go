@@ -194,7 +194,7 @@ type SimpleTokenizer struct {
 	SplitOn string
 }
 
-func NewDefaultSanitizer() *SimpleTokenizer {
+func NewDefaultTokenizer() *SimpleTokenizer {
 	return &SimpleTokenizer{SplitOn: " "}
 }
 
@@ -249,7 +249,11 @@ func (s *runeSanitizer) Contains(r rune) bool {
 // to learn off the given data stream. The sanitization
 // function is set to the given function. It must
 // comply with the transform.RemoveFunc interface
-func NewNaiveBayes(stream <-chan base.TextDatapoint, classes uint8, sanitize func(rune) bool) *NaiveBayes {
+func NewNaiveBayes(
+	stream <-chan base.TextDatapoint,
+	classes uint8,
+	sanitize func(rune) bool,
+) *NaiveBayes {
 	return &NaiveBayes{
 		Words:         cmap.New[Word](),
 		Count:         make([]uint64, classes),
@@ -257,7 +261,7 @@ func NewNaiveBayes(stream <-chan base.TextDatapoint, classes uint8, sanitize fun
 
 		sanitize:  runes.Remove(newRuneSanitizer(sanitize)),
 		stream:    stream,
-		tokenizer: NewDefaultSanitizer(),
+		tokenizer: NewDefaultTokenizer(),
 
 		Output: os.Stdout,
 	}
@@ -467,6 +471,34 @@ func (b *NaiveBayes) ToModel() Model {
 		DocumentCount: b.DocumentCount,
 		DictCount:     b.DictCount,
 	}
+}
+
+func NewNaiveBayesFromModel(m Model) *NaiveBayes {
+	b := &NaiveBayes{
+		Words:         cmap.New[Word](),
+		Count:         m.Count,
+		Probabilities: m.Probabilities,
+		DocumentCount: m.DocumentCount,
+		DictCount:     m.DictCount,
+		tokenizer:     NewDefaultTokenizer(),
+	}
+
+	b.Words.MSet(m.Words)
+	return b
+}
+
+func NewNaiveBayesFromFile(modelFilepath string) (*NaiveBayes, error) {
+	bytes, err := os.ReadFile(modelFilepath)
+	if err != nil {
+		return nil, fmt.Errorf("read: %w", err)
+	}
+
+	var m Model
+	if err := json.Unmarshal(bytes, &m); err != nil {
+		return nil, fmt.Errorf("decode: %w", err)
+	}
+
+	return NewNaiveBayesFromModel(m), nil
 }
 
 func (b *NaiveBayes) PersistModelToFile(

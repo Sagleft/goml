@@ -206,7 +206,7 @@ func TestSimpleTokenizer(t *testing.T) {
 		input  string
 		output []string
 	}
-	spaces := NewDefaultSanitizer()
+	spaces := NewDefaultTokenizer()
 	commas := SimpleTokenizer{SplitOn: ","}
 	spaceTests := []test{
 		{input: "My,mo ther,is,in,Los,Angeles", output: []string{"my,mo", "ther,is,in,los,angeles"}},
