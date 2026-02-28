@@ -1,7 +1,6 @@
 package cluster
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -608,7 +607,7 @@ func (k *TriangleKMeans) PersistToFile(path string) error {
 		return fmt.Errorf("ERROR: you just tried to persist your model to a file with no path!! That's a no-no. Try it with a valid filepath")
 	}
 
-	bytes, err := json.Marshal(k.Centroids)
+	bytes, err := base.JSON.Marshal(k.Centroids)
 	if err != nil {
 		return err
 	}
@@ -641,7 +640,7 @@ func (k *TriangleKMeans) RestoreFromFile(path string) error {
 		return err
 	}
 
-	err = json.Unmarshal(bytes, &k.Centroids)
+	err = base.JSON.Unmarshal(bytes, &k.Centroids)
 	if err != nil {
 		return err
 	}
