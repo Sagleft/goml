@@ -1,8 +1,9 @@
 module github.com/Sagleft/goml
 
-go 1.17
+go 1.25
 
 require (
+	github.com/orcaman/concurrent-map/v2 v2.0.1
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/text v0.3.6
 )

@@ -72,21 +72,19 @@ Example Online Naive Bayes Text Classifier (multiclass):
 package text
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math"
 	"os"
 	"strings"
-	"sync"
 
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 
 	"github.com/Sagleft/goml/base"
+	cmap "github.com/orcaman/concurrent-map/v2"
 )
 
 /*
@@ -139,24 +137,24 @@ type NaiveBayes struct {
 	// Words holds a map of words
 	// to their corresponding Word
 	// structure
-	Words concurrentMap `json:"words"`
+	Words cmap.ConcurrentMap[string, Word]
 
 	// Count holds the number of times
 	// class i was seen as Count[i]
-	Count []uint64 `json:"count"`
+	Count []uint64
 
 	// Probabilities holds the probability
 	// that class Y is class i as
 	// Probabilities[i] for
-	Probabilities []float64 `json:"probabilities"`
+	Probabilities []float64
 
 	// DocumentCount holds the number of
 	// documents that have been seen
-	DocumentCount uint64 `json:"document_count"`
+	DocumentCount uint64
 
 	// DictCount holds the size of the
 	// NaiveBayes model's vocabulary
-	DictCount uint64 `json:"vocabulary_size"`
+	DictCount uint64
 
 	// sanitize is used by a model
 	// to sanitize input of text
@@ -171,7 +169,16 @@ type NaiveBayes struct {
 
 	// Output is the io.Writer used for logging
 	// and printing. Defaults to os.Stdout.
-	Output io.Writer `json:"-"`
+	Output io.Writer
+}
+
+// To load and store models
+type Model struct {
+	Words         map[string]Word `json:"words"`
+	Count         []uint64        `json:"count"`
+	Probabilities []float64       `json:"probabilities"`
+	DocumentCount uint64          `json:"document_count"`
+	DictCount     uint64          `json:"vocabulary_size"`
 }
 
 // Tokenizer accepts a sentence as input and breaks
@@ -187,7 +194,7 @@ type SimpleTokenizer struct {
 	SplitOn string
 }
 
-func NewDefaultSanitizer() *SimpleTokenizer {
+func NewDefaultTokenizer() *SimpleTokenizer {
 	return &SimpleTokenizer{SplitOn: " "}
 }
 
@@ -198,43 +205,6 @@ func (t *SimpleTokenizer) Tokenize(sentence string) []string {
 	// is the tokenizer really the best place to be making
 	// everything lowercase? is this really a sanitizaion func?
 	return strings.Split(strings.ToLower(sentence), t.SplitOn)
-}
-
-// concurrentMap allows concurrency-friendly map
-// access via its exported Get and Set methods
-type concurrentMap struct {
-	sync.RWMutex
-	words map[string]Word
-}
-
-func (m *concurrentMap) MarshalJSON() ([]byte, error) {
-	return json.Marshal(m.words)
-}
-
-func (m *concurrentMap) UnmarshalJSON(data []byte) error {
-	err := json.Unmarshal(data, &m.words)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Get looks up a word from h's Word map and should be used
-// in place of a direct map lookup. The only caveat is that
-// it will always return the 'success' boolean
-func (m *concurrentMap) Get(w string) (Word, bool) {
-	m.RLock()
-	result, ok := m.words[w]
-	m.RUnlock()
-	return result, ok
-}
-
-// Set sets word k's value to v in h's Word map
-func (m *concurrentMap) Set(k string, v Word) {
-	m.Lock()
-	m.words[k] = v
-	m.Unlock()
 }
 
 // Word holds the structural
@@ -279,15 +249,19 @@ func (s *runeSanitizer) Contains(r rune) bool {
 // to learn off the given data stream. The sanitization
 // function is set to the given function. It must
 // comply with the transform.RemoveFunc interface
-func NewNaiveBayes(stream <-chan base.TextDatapoint, classes uint8, sanitize func(rune) bool) *NaiveBayes {
+func NewNaiveBayes(
+	stream <-chan base.TextDatapoint,
+	classes uint8,
+	sanitize func(rune) bool,
+) *NaiveBayes {
 	return &NaiveBayes{
-		Words:         concurrentMap{sync.RWMutex{}, make(map[string]Word)},
+		Words:         cmap.New[Word](),
 		Count:         make([]uint64, classes),
 		Probabilities: make([]float64, classes),
 
 		sanitize:  runes.Remove(newRuneSanitizer(sanitize)),
 		stream:    stream,
-		tokenizer: NewDefaultSanitizer(),
+		tokenizer: NewDefaultTokenizer(),
 
 		Output: os.Stdout,
 	}
@@ -472,7 +446,7 @@ func (b *NaiveBayes) UpdateStream(stream chan base.TextDatapoint) {
 // UpdateSanitize updates the NaiveBayes model's
 // text sanitization transformation function
 func (b *NaiveBayes) UpdateSanitize(sanitize func(rune) bool) {
-	b.sanitize = transform.RemoveFunc(sanitize)
+	b.sanitize = runes.Remove(newRuneSanitizer(sanitize))
 }
 
 // UpdateTokenizer updates NaiveBayes model's tokenizer function.
@@ -489,95 +463,64 @@ func (b *NaiveBayes) String() string {
 	return fmt.Sprintf("h(θ) = argmax_c{log(P(y = c)) + Σlog(P(x|y = c))}\n\tClasses: %v\n\tDocuments evaluated in model: %v\n\tWords evaluated in model: %v\n", len(b.Count), int(b.DocumentCount), int(b.DictCount))
 }
 
-// PersistToFile takes in an absolute filepath and saves the
-// parameter vector θ to the file, which can be restored later.
-// The function will take paths from the current directory, but
-// functions
-//
-// The data is stored as JSON because it's one of the most
-// efficient storage method (you only need one comma extra
-// per feature + two brackets, total!) And it's extendable.
-func (b *NaiveBayes) PersistToFile(path string) error {
-	if path == "" {
-		return fmt.Errorf("ERROR: you just tried to persist your model to a file with no path!! That's a no-no. Try it with a valid filepath")
+func (b *NaiveBayes) ToModel() Model {
+	return Model{
+		Words:         b.Words.Items(),
+		Count:         b.Count,
+		Probabilities: b.Probabilities,
+		DocumentCount: b.DocumentCount,
+		DictCount:     b.DictCount,
 	}
-
-	bytes, err := json.Marshal(b)
-	if err != nil {
-		return err
-	}
-
-	err = ioutil.WriteFile(path, bytes, os.ModePerm)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
-// Restore takes the bytes of a NaiveBayes model and
-// restores a model to it. It defaults the sanitizer
-// to base.OnlyWordsAndNumbers and the tokenizer to
-// to a SimpleTokenizer that splits on spaces.
-//
-// This would be useful if training a model and saving
-// it into a project using go-bindata (look it up) so
-// you don't have to persist a large file and deal with
-// paths on a production system. This option is included
-// in text models vs. others because the text models
-// usually have much larger storage requirements.
-func (b *NaiveBayes) Restore(data []byte) error {
-	return b.RestoreWithFuncs(
-		bytes.NewReader(data),
-		base.OnlyWordsAndNumbers,
-		NewDefaultSanitizer(),
-	)
+func NewNaiveBayesFromModel(m Model, sanitize func(rune) bool) *NaiveBayes {
+	b := &NaiveBayes{
+		Words:         cmap.New[Word](),
+		Count:         m.Count,
+		Probabilities: m.Probabilities,
+		DocumentCount: m.DocumentCount,
+		DictCount:     m.DictCount,
+		tokenizer:     NewDefaultTokenizer(),
+	}
+
+	b.Words.MSet(m.Words)
+	b.UpdateSanitize(sanitize)
+	return b
 }
 
-// RestoreWithFuncs takes raw JSON data of a model and
-// restores a model from it. The tokenizer and sanitizer
-// passed in will be assigned to the restored model.
-func (b *NaiveBayes) RestoreWithFuncs(
-	data io.Reader,
-	sanitizer func(rune) bool,
-	tokenizer Tokenizer,
+func NewNaiveBayesFromFile(
+	modelFilepath string,
+	sanitize func(rune) bool,
+) (*NaiveBayes, error) {
+	bytes, err := os.ReadFile(modelFilepath)
+	if err != nil {
+		return nil, fmt.Errorf("read: %w", err)
+	}
+
+	var m Model
+	if err := json.Unmarshal(bytes, &m); err != nil {
+		return nil, fmt.Errorf("decode: %w", err)
+	}
+
+	return NewNaiveBayesFromModel(m, sanitize), nil
+}
+
+func (b *NaiveBayes) PersistModelToFile(
+	path string,
+	enableGZip bool,
 ) error {
-	if b == nil {
-		return errors.New("Cannot restore a model to a nil pointer")
-	}
-	err := json.NewDecoder(data).Decode(b)
-	if err != nil {
-		return err
-	}
-	b.sanitize = transform.RemoveFunc(sanitizer)
-	b.tokenizer = tokenizer
-	return nil
-}
-
-// RestoreFromFile takes in a path to a parameter vector theta
-// and assigns the model it's operating on's parameter vector
-// to that. The only parameters not in the vector are the sanitization
-// and tokenization functions which default to base.OnlyWordsAndNumbers
-// and SimpleTokenizer{SplitOn: " "}
-//
-// The path must ba an absolute path or a path from the current
-// directory
-//
-// This would be useful in persisting data between running
-// a model on data.
-func (b *NaiveBayes) RestoreFromFile(path string) error {
 	if path == "" {
-		return fmt.Errorf("ERROR: you just tried to restore your model from a file with no path! That's a no-no. Try it with a valid filepath")
+		return errors.New("model path not set")
 	}
 
-	bytes, err := os.ReadFile(path)
+	dataBytes, err := json.Marshal(b.ToModel())
 	if err != nil {
-		return err
-	}
-	err = b.Restore(bytes)
-	if err != nil {
-		return err
+		return fmt.Errorf("encode model: %w", err)
 	}
 
+	err = os.WriteFile(path, dataBytes, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("write: %w", err)
+	}
 	return nil
 }
